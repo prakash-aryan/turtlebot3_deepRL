@@ -1,0 +1,24 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+    <model name="obstacle2">
+      <static>true</static>
+      <link name="link_obstacle2">
+        <inertial>
+          <mass>1.0</mass>
+          <inertia>
+            <ixx>0.01</ixx><ixy>0</ixy><ixz>0</ixz>
+            <iyy>0.01</iyy><iyz>0</iyz>
+            <izz>0.01</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.16</radius>
+              <length>0.50</length>
+            </cylinder>
+          </geometry>
+        </visual>
+      </link>
+</model>  
+</sdf>

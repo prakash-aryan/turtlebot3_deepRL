@@ -80,6 +80,10 @@ Four terminals (or a `tmux` session):
 ```bash
 ros2 launch turtlebot3_drl_gazebo turtlebot3_drl_stage9.launch.py
 ```
+Pass `headless:=true` to skip the Gazebo GUI and RViz (faster, used for training):
+```bash
+ros2 launch turtlebot3_drl_gazebo turtlebot3_drl_stage9.launch.py headless:=true
+```
 
 **2. Goal publisher:**
 ```bash
@@ -91,12 +95,16 @@ ros2 run turtlebot3_drl gazebo_goals
 ros2 run turtlebot3_drl environment
 ```
 
-**4. Agent — pick DDPG or TD3:**
+**4. Agent — pick `dqn`, `ddpg`, `td3`, or `redq`:**
 ```bash
 ros2 run turtlebot3_drl test_agent td3 "examples/td3_0_stage9" 7400
 # or
 ros2 run turtlebot3_drl test_agent ddpg "examples/ddpg_0_stage9" 8000
 ```
+
+> `redq` is implemented but **not yet verified on this task** — no pretrained
+> checkpoint is shipped and a full convergence run hasn't been done yet. See
+> the Algorithms section below.
 
 The model name must end with the stage number — the loader reads the last
 character as `stage` (e.g. `examples/td3_0_stage9` → stage 9).
@@ -122,11 +130,22 @@ Included pretrained examples in `src/turtlebot3_drl/model/examples/`:
 * `ddpg_0_stage9/` — DDPG at episode 8000
 * `td3_0_stage9/` — TD3 at episode 7400
 
+Available algorithms: `dqn`, `ddpg`, `td3`, `redq`.
+
+**REDQ** (Randomized Ensembled Double Q-learning) is wired into the same
+training loop but ships **without** a pretrained checkpoint — the code runs
+end-to-end on dummy data and on a live sim, but we haven't completed a full
+convergence run yet. Hyperparameters live under the `REDQ_*` block in
+`common/settings.py` (N=10 critics, UTD=20, auto-tuned α, batch 512). Expect
+~20 h wall-clock with the defaults; drop `REDQ_UTD_RATIO` to 5 or 10 for a
+faster (less sample-efficient) run.
+
 Training from scratch:
 
 ```bash
-ros2 run turtlebot3_drl train_agent td3        # new session
-ros2 run turtlebot3_drl train_agent td3 td3_0_stage9 500   # resume
+ros2 run turtlebot3_drl train_agent td3                       # new session
+ros2 run turtlebot3_drl train_agent td3 td3_0_stage9 500      # resume at ep 500
+ros2 run turtlebot3_drl train_agent redq                      # new REDQ session
 ```
 
 Hyperparameters live in `src/turtlebot3_drl/turtlebot3_drl/common/settings.py`

@@ -92,7 +92,13 @@ class DRLEnvironment(Node):
         # publishers
         self.cmd_vel_pub = self.create_publisher(Twist, self.velo_topic, qos)
         # subscribers
-        self.goal_pose_sub = self.create_subscription(Pose, self.goal_topic, self.goal_pose_callback, qos)
+        from rclpy.qos import DurabilityPolicy, ReliabilityPolicy
+        goal_qos = QoSProfile(
+            depth=1,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            reliability=ReliabilityPolicy.RELIABLE,
+        )
+        self.goal_pose_sub = self.create_subscription(Pose, self.goal_topic, self.goal_pose_callback, goal_qos)
         self.odom_sub = self.create_subscription(Odometry, 'ground_truth_odom', self.odom_callback, qos)
         self.scan_sub = self.create_subscription(LaserScan, self.scan_topic, self.scan_callback, qos_profile=qos_profile_sensor_data)
         self.clock_sub = self.create_subscription(Clock, '/clock', self.clock_callback, qos_profile=qos_clock)

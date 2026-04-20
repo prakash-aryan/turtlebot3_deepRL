@@ -92,6 +92,15 @@ POLICY_NOISE            = 0.2
 POLICY_NOISE_CLIP       = 0.5
 POLICY_UPDATE_FREQUENCY = 2
 
+# REDQ parameters
+REDQ_ENSEMBLE_SIZE      = 10     # N — critics in the ensemble
+REDQ_TARGET_SUBSET      = 2      # M — random subset used when building the TD target (M <= N)
+REDQ_UTD_RATIO          = 20     # G — gradient updates per env step
+REDQ_INIT_TEMPERATURE   = 0.2    # initial entropy coefficient α
+REDQ_AUTOTUNE_ALPHA     = True   # learn α so policy entropy tracks REDQ_TARGET_ENTROPY
+REDQ_TARGET_ENTROPY     = None   # None → default heuristic of -|action_size|
+REDQ_BATCH_SIZE         = 512    # mini-batch for REDQ (bigger → better GPU utilisation)
+
 # Stacking
 STACK_DEPTH = 3             # Number of subsequent frames processed per step
 FRAME_SKIP  = 4             # Number of frames skipped in between subsequent frames

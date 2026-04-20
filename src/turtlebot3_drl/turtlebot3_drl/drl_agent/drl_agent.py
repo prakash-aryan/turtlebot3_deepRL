@@ -34,6 +34,7 @@ from ..common import utilities as util
 from .dqn import DQN
 from .ddpg import DDPG
 from .td3 import TD3
+from .redq import REDQ
 
 from turtlebot3_msgs.srv import DrlStep, Goal
 from ros_gz_interfaces.srv import ControlWorld
@@ -65,8 +66,10 @@ class DrlAgent(Node):
             self.model = DDPG(self.device, self.sim_speed)
         elif self.algorithm == 'td3':
             self.model = TD3(self.device, self.sim_speed)
+        elif self.algorithm == 'redq':
+            self.model = REDQ(self.device, self.sim_speed)
         else:
-            quit("\033[1m" + "\033[93m" + f"invalid algorithm specified ({self.algorithm}), choose one of: dqn, ddpg, td3" + "\033[0m}")
+            quit("\033[1m" + "\033[93m" + f"invalid algorithm specified ({self.algorithm}), choose one of: dqn, ddpg, td3, redq" + "\033[0m}")
 
         self.replay_buffer = ReplayBuffer(self.model.buffer_size)
         self.graph = Graph()

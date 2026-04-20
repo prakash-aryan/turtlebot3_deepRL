@@ -3,6 +3,12 @@
 build/
 install/
 log/
+logs/
 tmux*
 __pycache__/
 *.pyc
+
+# per-machine training runs (keep `examples/` for pretrained models)
+src/turtlebot3_drl/model/*/
+!src/turtlebot3_drl/model/examples/
+src/turtlebot3_drl/model/__*_comparison.txt

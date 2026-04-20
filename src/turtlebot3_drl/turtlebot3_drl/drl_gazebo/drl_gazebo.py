@@ -66,7 +66,13 @@ class DRLGazebo(Node):
         ** Initialise ROS publishers, subscribers and clients
         ************************************************************"""
         # Initialise publishers
-        self.goal_pose_pub = self.create_publisher(Pose, 'drl_goal_pose', QoSProfile(depth=10))
+        from rclpy.qos import DurabilityPolicy, ReliabilityPolicy
+        goal_qos = QoSProfile(
+            depth=1,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            reliability=ReliabilityPolicy.RELIABLE,
+        )
+        self.goal_pose_pub = self.create_publisher(Pose, 'drl_goal_pose', goal_qos)
 
         self.spawn_entity_client = self.create_client(
             SpawnEntity, f'/world/{self.world_name}/create')
@@ -94,7 +100,12 @@ class DRLGazebo(Node):
         self.reset_simulation()
         self.spawn_entity()
         self.goal_spawned = True
-        self.publish_callback()
+        # spawn already placed the goal at (goal_x, goal_y); avoid move_goal_entity
+        # here because the entity may not be registered yet (async create service).
+        goal_pose = Pose()
+        goal_pose.position.x = self.goal_x
+        goal_pose.position.y = self.goal_y
+        self.goal_pose_pub.publish(goal_pose)
         print("Init, goal pose:", self.goal_x, self.goal_y)
         time.sleep(1)
 

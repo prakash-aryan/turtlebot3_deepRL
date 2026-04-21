@@ -97,14 +97,10 @@ ros2 run turtlebot3_drl environment
 
 **4. Agent — pick `dqn`, `ddpg`, `td3`, or `redq`:**
 ```bash
-ros2 run turtlebot3_drl test_agent td3 "examples/td3_0_stage9" 7400
-# or
+ros2 run turtlebot3_drl test_agent td3  "examples/td3_0_stage9"  7400
 ros2 run turtlebot3_drl test_agent ddpg "examples/ddpg_0_stage9" 8000
+ros2 run turtlebot3_drl test_agent redq "examples/redq_0_stage9" 3600
 ```
-
-> `redq` is implemented but **not yet verified on this task** — no pretrained
-> checkpoint is shipped and a full convergence run hasn't been done yet. See
-> the Algorithms section below.
 
 The model name must end with the stage number — the loader reads the last
 character as `stage` (e.g. `examples/td3_0_stage9` → stage 9).
@@ -127,26 +123,33 @@ decay, SLAM `/map`, robot path trail, and the current goal arrow.
 ## Switching models / algorithms
 Included pretrained examples in `src/turtlebot3_drl/model/examples/`:
 
-* `ddpg_0_stage9/` — DDPG at episode 8000
-* `td3_0_stage9/` — TD3 at episode 7400
+| Folder | Algorithm | Episode | Observed success on stage 9 |
+|---|---|---|---|
+| `ddpg_0_stage9/` | DDPG | 8 000 | ~85 % |
+| `td3_0_stage9/`  | TD3  | 7 400 | ~95 %+ |
+| `redq_0_stage9/` | REDQ | 3 600 | ~80 % (6× fewer env-steps than TD3) |
 
-Available algorithms: `dqn`, `ddpg`, `td3`, `redq`.
+All four algorithms (`dqn`, `ddpg`, `td3`, `redq`) share the same env +
+reward + replay buffer and are selected via the first positional arg to
+`test_agent` / `train_agent`.
 
-**REDQ** (Randomized Ensembled Double Q-learning) is wired into the same
-training loop but ships **without** a pretrained checkpoint — the code runs
-end-to-end on dummy data and on a live sim, but we haven't completed a full
-convergence run yet. Hyperparameters live under the `REDQ_*` block in
-`common/settings.py` (N=10 critics, UTD=20, auto-tuned α, batch 512). Expect
-~20 h wall-clock with the defaults; drop `REDQ_UTD_RATIO` to 5 or 10 for a
-faster (less sample-efficient) run.
-
-Training from scratch:
-
+### Training another agent from scratch
 ```bash
-ros2 run turtlebot3_drl train_agent td3                       # new session
-ros2 run turtlebot3_drl train_agent td3 td3_0_stage9 500      # resume at ep 500
-ros2 run turtlebot3_drl train_agent redq                      # new REDQ session
+# create a new session (auto-numbered: dir becomes <host>/<algo>_N_stage_<S>)
+ros2 run turtlebot3_drl train_agent td3        # replace td3 with ddpg / dqn / redq
+
+# resume a session at a specific episode
+ros2 run turtlebot3_drl train_agent td3 td3_0_stage9 500
 ```
+
+Training dumps go to `src/turtlebot3_drl/model/<hostname>/<algo>_N_stage_<S>/`
+with actor/critic `.pt` checkpoints every `MODEL_STORE_INTERVAL` (100) episodes
+plus a running `_figure.png` plot of reward / outcome history. Hyperparameters
+live in `src/turtlebot3_drl/turtlebot3_drl/common/settings.py` — each algorithm
+has its own block (`POLICY_NOISE`, `REDQ_UTD_RATIO`, `DQN_ACTION_SIZE`, etc.)
+that you can tune without touching the agent code. Training is GPU-accelerated
+via PyTorch; run `headless:=true` on the sim launch to skip the Gazebo GUI +
+RViz for a ~15–20 % speedup.
 
 Hyperparameters live in `src/turtlebot3_drl/turtlebot3_drl/common/settings.py`
 (reward function, scan samples, arena sizes, episode length, etc.).

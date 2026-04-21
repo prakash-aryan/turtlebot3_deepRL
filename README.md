@@ -151,6 +151,35 @@ that you can tune without touching the agent code. Training is GPU-accelerated
 via PyTorch; run `headless:=true` on the sim launch to skip the Gazebo GUI +
 RViz for a ~15–20 % speedup.
 
+### Running on CPU (no NVIDIA GPU)
+
+PyTorch device is picked automatically — `util.check_gpu()` returns `cuda` if
+available, else `cpu`. To install the CPU-only wheel:
+
+```bash
+uv pip install --system --python /usr/bin/python3.12 \
+    torch --index-url https://download.pytorch.org/whl/cpu
+```
+
+Everything works unchanged from there — testing a pretrained policy
+(`test_agent td3 "examples/td3_0_stage9" 7400`) runs fine on CPU because
+inference is cheap. Training is **much slower**: per-step cost is dominated
+by the gradient updates, which on a modern desktop CPU run ~10–30× slower
+than an RTX 4070+. For overnight runs on CPU, tune settings down:
+
+```python
+# common/settings.py — sensible CPU defaults
+BATCH_SIZE              = 64        # was 128
+HIDDEN_SIZE             = 256       # was 512
+REDQ_ENSEMBLE_SIZE      = 5         # was 10
+REDQ_UTD_RATIO          = 5         # was 20
+REDQ_BATCH_SIZE         = 128       # was 512
+```
+
+DDPG / TD3 / DQN are cheaper per update and tolerate CPU training better than
+REDQ (which is gradient-update bound). Expect 4–10× real-time training for
+TD3/DDPG on a decent CPU vs near-real-time on a mid-range GPU.
+
 Hyperparameters live in `src/turtlebot3_drl/turtlebot3_drl/common/settings.py`
 (reward function, scan samples, arena sizes, episode length, etc.).
 

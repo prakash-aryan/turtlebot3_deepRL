@@ -12,3 +12,9 @@ __pycache__/
 src/turtlebot3_drl/model/*/
 !src/turtlebot3_drl/model/examples/
 src/turtlebot3_drl/model/__*_comparison.txt
+src/turtlebot3_drl/model/__*_comparison.csv
+src/turtlebot3_drl/model/examples/**/_eval_stage9_*.csv
+src/turtlebot3_drl/model/examples/**/_test_stage9_*.txt
+
+# Claude Code harness state
+.claude/

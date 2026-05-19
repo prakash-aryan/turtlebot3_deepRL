@@ -1,0 +1,19 @@
+services:
+  drl:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        TORCH_INDEX_URL: https://download.pytorch.org/whl/cpu
+    image: turtlebot3-drl:jazzy-cpu
+    container_name: turtlebot3-drl-cpu
+    ports:
+      - "6080:6040"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    volumes:
+      - ..:/root/turtlebot3_deepRL:rw
+    ipc: host
+    stdin_open: true
+    tty: true

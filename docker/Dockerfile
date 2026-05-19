@@ -37,10 +37,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html \
     && rm -rf /var/lib/apt/lists/*
 
-# Layer 3: PyTorch (CUDA 12.4 wheels) + colcon override-check (not in apt on
-# Jazzy; needed for --allow-overriding turtlebot3_msgs).
+# Layer 3: PyTorch + colcon override-check (not in apt on Jazzy; needed for
+# --allow-overriding turtlebot3_msgs). The PyTorch wheel index is a build
+# arg so the same Dockerfile produces a GPU image (default: CUDA 12.4) or
+# a CPU-only image (override with https://download.pytorch.org/whl/cpu —
+# see docker-compose.cpu.yml).
+ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cu124
 RUN pip3 install --no-cache-dir --break-system-packages \
-        --index-url https://download.pytorch.org/whl/cu124 \
+        --index-url ${TORCH_INDEX_URL} \
         torch \
     && pip3 install --no-cache-dir --break-system-packages \
         colcon-override-check

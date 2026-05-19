@@ -1,0 +1,139 @@
+# Deterministic test scenarios for stage 9.
+#
+# Each scenario fixes (robot_start, goal). Obstacle phase is also fixed:
+# the eval runner resets the gz-sim clock to 0 at the start of every
+# scenario, so the six animated cylinders always replay the same
+# trajectories from their SDF spawn poses ((2,2), (-2,-2), (2,-2),
+# (-2,2), (0,-2), (0,2)). Walls in the world file are already static.
+#
+# Coordinates are in meters; yaw in radians (0 = +x, pi/2 = +y).
+# Goal is reached when |robot - goal| < 0.20 m (THREHSOLD_GOAL).
+# Episode times out at EPISODE_TIMEOUT_SECONDS = 50 sim seconds.
+#
+# Hand-picked to span:
+#   easy (5)  - short distance, clear LOS at t=0
+#   medium (8) - medium distance, at least one obstacle/wall in the way
+#   hard  (5) - long distance, multi-obstacle, narrow corridor, or
+#               obstacle phase requiring reactive avoidance
+#   edge  (2) - extreme yaw or very short goal
+
+scenarios:
+  - id: S01
+    tag: easy_right_short
+    difficulty: easy
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x:  1.0, y:  0.3}
+
+  - id: S02
+    tag: easy_forward_down
+    difficulty: easy
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x:  0.3, y: -1.0}
+
+  - id: S03
+    tag: easy_left_down
+    difficulty: easy
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x: -0.5, y: -1.0}
+
+  - id: S04
+    tag: easy_yaw_up_to_ul
+    difficulty: easy
+    start: {x:  0.0, y:  0.0, yaw:  1.5708}
+    goal:  {x: -1.0, y:  1.0}
+
+  - id: S05
+    tag: easy_yaw_down_to_d
+    difficulty: easy
+    start: {x:  0.0, y:  0.0, yaw: -1.5708}
+    goal:  {x:  0.3, y: -1.2}
+
+  - id: S06
+    tag: med_far_right
+    difficulty: medium
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x:  2.0, y: -0.5}
+
+  - id: S07
+    tag: med_yaw_up_to_ur
+    difficulty: medium
+    start: {x:  0.0, y:  0.0, yaw:  1.5708}
+    goal:  {x:  1.3, y:  1.0}
+
+  - id: S08
+    tag: med_back_left
+    difficulty: medium
+    start: {x:  0.0, y:  0.0, yaw:  3.1416}
+    goal:  {x: -2.2, y:  0.0}
+
+  - id: S09
+    tag: med_diag_to_ul
+    difficulty: medium
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x: -2.0, y:  1.0}
+
+  - id: S10
+    tag: med_diag_dl
+    difficulty: medium
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x: -1.0, y: -1.2}
+
+  - id: S11
+    tag: med_back_to_ur
+    difficulty: medium
+    start: {x:  0.0, y:  0.0, yaw:  3.1416}
+    goal:  {x:  2.0, y:  1.0}
+
+  - id: S12
+    tag: med_yaw_up_far_left
+    difficulty: medium
+    start: {x:  0.0, y:  0.0, yaw:  1.5708}
+    goal:  {x: -2.0, y:  1.0}
+
+  - id: S13
+    tag: med_diag_ne
+    difficulty: medium
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x:  1.3, y:  1.0}
+
+  - id: S14
+    tag: hard_far_corner_sw
+    difficulty: hard
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x: -1.7, y: -2.4}
+
+  - id: S15
+    tag: hard_back_far_ul
+    difficulty: hard
+    start: {x:  0.0, y:  0.0, yaw:  3.1416}
+    goal:  {x: -2.4, y:  1.9}
+
+  - id: S16
+    tag: hard_yaw_far_ur
+    difficulty: hard
+    start: {x:  0.0, y:  0.0, yaw:  1.5708}
+    goal:  {x:  2.2, y:  1.6}
+
+  - id: S17
+    tag: hard_yaw_up_to_dr
+    difficulty: hard
+    start: {x:  0.0, y:  0.0, yaw:  1.5708}
+    goal:  {x:  1.7, y: -1.7}
+
+  - id: S18
+    tag: hard_far_left_low
+    difficulty: hard
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x: -2.5, y: -0.5}
+
+  - id: S19
+    tag: edge_very_short
+    difficulty: edge
+    start: {x:  0.0, y:  0.0, yaw:  0.0}
+    goal:  {x:  0.3, y:  0.0}
+
+  - id: S20
+    tag: edge_yaw_pi_to_d
+    difficulty: edge
+    start: {x:  0.0, y:  0.0, yaw:  3.1416}
+    goal:  {x:  0.0, y: -1.5}

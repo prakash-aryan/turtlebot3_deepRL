@@ -16,6 +16,10 @@ find_package(gz_math_vendor REQUIRED)
 find_package(gz-math REQUIRED)
 find_package(gz_plugin_vendor REQUIRED)
 find_package(gz-plugin REQUIRED)
+find_package(gz_msgs_vendor REQUIRED)
+find_package(gz-msgs10 REQUIRED)
+find_package(gz_transport_vendor REQUIRED)
+find_package(gz-transport13 REQUIRED)
 find_package(sdformat_vendor REQUIRED)
 find_package(sdformat REQUIRED)
 
@@ -23,7 +27,9 @@ add_library(obstacle_animator SHARED src/obstacle_animator.cc)
 target_link_libraries(obstacle_animator
   gz-sim::gz-sim
   gz-math::gz-math
+  gz-msgs10::gz-msgs10
   gz-plugin::register
+  gz-transport13::gz-transport13
   sdformat::sdformat
 )
 

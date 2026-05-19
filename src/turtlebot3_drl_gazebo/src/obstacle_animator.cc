@@ -7,12 +7,14 @@
 //   </plugin>
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <memory>
 #include <vector>
 
 #include <gz/math/Pose3.hh>
 #include <gz/math/Quaternion.hh>
+#include <gz/msgs/empty.pb.h>
 #include <gz/plugin/Register.hh>
 #include <gz/sim/System.hh>
 #include <gz/sim/Model.hh>
@@ -20,6 +22,7 @@
 #include <gz/sim/components/Pose.hh>
 #include <gz/sim/components/PoseCmd.hh>
 #include <gz/sim/components/World.hh>
+#include <gz/transport/Node.hh>
 #include <sdf/Element.hh>
 
 namespace turtlebot3_drlnav
@@ -79,6 +82,20 @@ public:
     if (poseComp) {
       this->origin = poseComp->Data();
     }
+
+    // Subscribe to a phase-reset topic so external nodes (e.g. the
+    // eval runner) can ask every animator to treat "now" as t=0 in
+    // its keyframe cycle without touching the gz-sim world clock.
+    // Resetting the clock invalidates dynamically-spawned models'
+    // physics state (DiffDrive loses its joints), so we offset the
+    // phase here instead.
+    this->reset_requested.store(false);
+    this->node.Subscribe<gz::msgs::Empty>(
+        "/obstacle_phase_reset",
+        [this](const gz::msgs::Empty &) {
+          this->reset_requested.store(true);
+        });
+
     this->initialized = true;
   }
 
@@ -91,9 +108,13 @@ public:
 
     const double t_sec =
         std::chrono::duration<double>(_info.simTime).count();
-    double t = t_sec;
+    if (this->reset_requested.exchange(false)) {
+      this->phase_offset_sec = t_sec;
+    }
+    double t = t_sec - this->phase_offset_sec;
+    if (t < 0.0) t = 0.0;
     if (this->loop && this->duration > 0.0) {
-      t = std::fmod(t_sec, this->duration);
+      t = std::fmod(t, this->duration);
     } else if (t > this->duration) {
       t = this->duration;
     }
@@ -155,6 +176,9 @@ private:
   double duration{10.0};
   bool loop{true};
   bool initialized{false};
+  gz::transport::Node node;
+  std::atomic_bool reset_requested{false};
+  double phase_offset_sec{0.0};
 
   // Throttle SetChanged to ~scene-broadcaster rate to avoid publishing
   // stale/fresh pose pairs within a single broadcast cycle.

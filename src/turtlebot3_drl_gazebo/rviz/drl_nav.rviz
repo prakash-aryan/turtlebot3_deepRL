@@ -107,7 +107,7 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz_default_plugins/Pose
       Color: 0; 255; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.25
       Head Radius: 0.1
       Name: Goal
@@ -145,6 +145,18 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /robot_path
 
+
+    - Class: rviz_default_plugins/MarkerArray
+      Name: EvalScenario
+      Enabled: true
+      Namespaces: { eval: true }
+      Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /eval_markers
+      Value: true
 
     - Class: rviz_default_plugins/TF
       Enabled: false

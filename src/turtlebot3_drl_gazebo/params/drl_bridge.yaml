@@ -47,3 +47,13 @@
   ros_type_name: "nav_msgs/msg/Odometry"
   gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS
+
+# eval_agent pokes this when starting a deterministic scenario; the
+# obstacle_animator plugin treats simTime at that moment as t=0 in
+# its keyframe cycle without touching the gz-sim world clock (a
+# clock reset wipes out the dynamically-spawned robot's joints).
+- ros_topic_name: "obstacle_phase_reset"
+  gz_topic_name: "obstacle_phase_reset"
+  ros_type_name: "std_msgs/msg/Empty"
+  gz_type_name: "gz.msgs.Empty"
+  direction: ROS_TO_GZ

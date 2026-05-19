@@ -26,6 +26,7 @@ from ament_index_python.packages import get_package_share_directory
 from ros_gz_interfaces.srv import DeleteEntity, SpawnEntity, ControlWorld, SetEntityPose
 from ros_gz_interfaces.msg import Entity, EntityFactory, WorldControl, WorldReset
 from geometry_msgs.msg import Pose
+from std_msgs.msg import Bool
 
 import rclpy
 from rclpy.qos import QoSProfile
@@ -89,6 +90,20 @@ class DRLGazebo(Node):
         self.task_succeed_server    = self.create_service(RingGoal, 'task_succeed', self.task_succeed_callback)
         self.task_fail_server       = self.create_service(RingGoal, 'task_fail', self.task_fail_callback)
 
+        # When eval_runner is driving deterministic scenarios it latches
+        # /eval_mode_active = True. While that flag is set we stop
+        # generating random goals on task_succeed/task_fail and let the
+        # eval runner own scenario transitions instead.
+        self.eval_mode_active = False
+        from rclpy.qos import DurabilityPolicy, ReliabilityPolicy
+        eval_qos = QoSProfile(
+            depth=1,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            reliability=ReliabilityPolicy.RELIABLE,
+        )
+        self.eval_mode_sub = self.create_subscription(
+            Bool, '/eval_mode_active', self._eval_mode_callback, eval_qos)
+
         self.obstacle_coordinates   = self.get_obstacle_coordinates()
         self.init_callback()
 
@@ -133,7 +148,14 @@ class DRLGazebo(Node):
             self.get_logger().info('set_pose service not available, waiting again...')
         self.set_pose_client.call_async(req)
 
+    def _eval_mode_callback(self, msg):
+        if msg.data != self.eval_mode_active:
+            print(f"[drl_gazebo] eval_mode_active -> {msg.data}")
+        self.eval_mode_active = bool(msg.data)
+
     def task_succeed_callback(self, request, response):
+        if self.eval_mode_active:
+            return response
         if ENABLE_TRUE_RANDOM_GOALS:
             self.generate_random_goal()
             print(f"success: generate (random) a new goal, goal pose: {self.goal_x:.2f}, {self.goal_y:.2f}")
@@ -146,6 +168,8 @@ class DRLGazebo(Node):
         return response
 
     def task_fail_callback(self, request, response):
+        if self.eval_mode_active:
+            return response
         self.reset_simulation()
         if ENABLE_TRUE_RANDOM_GOALS:
             self.generate_random_goal()

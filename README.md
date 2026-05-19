@@ -105,6 +105,38 @@ ros2 run turtlebot3_drl test_agent redq "examples/redq_0_stage9" 3600
 The model name must end with the stage number — the loader reads the last
 character as `stage` (e.g. `examples/td3_0_stage9` → stage 9).
 
+## Deterministic benchmark (fair cross-algorithm comparison)
+
+`test_agent` draws random goals and never resets the obstacle phase, so
+different algorithms see different worlds. For an apples-to-apples score,
+use `eval_agent`. It walks a fixed 20-scenario suite from
+[scenarios.yaml](src/turtlebot3_drl/turtlebot3_drl/eval/scenarios.yaml)
+(easy / medium / hard / edge mix) and resets the gz-sim clock at every
+scenario start so the obstacle animator replays the same trajectory from
+t=0 for every algorithm.
+
+```bash
+# Run the sim launch first (headless or not), then in one terminal each:
+ros2 run turtlebot3_drl gazebo_goals
+ros2 run turtlebot3_drl environment
+ros2 run turtlebot3_drl eval_agent td3  examples/td3_0_stage9  7400
+ros2 run turtlebot3_drl eval_agent ddpg examples/ddpg_0_stage9 8000
+ros2 run turtlebot3_drl eval_agent redq examples/redq_0_stage9 3600
+```
+
+Outputs:
+* `src/turtlebot3_drl/model/<host or examples>/<session>/_eval_stage9_eps<E>_<datetime>.csv`
+  — one row per scenario (outcome, steps, distance, duration, reward).
+* `src/turtlebot3_drl/model/__eval_comparison.csv` — one summary row per
+  run, appended across algorithms for direct comparison.
+
+Caveats: `eval_agent` latches `/eval_mode_active=True` so `gazebo_goals`
+stops generating random goals while the eval is running; restart that
+node (or kill `eval_agent` cleanly) before going back to `test_agent`.
+RViz's SLAM map briefly resets each scenario because the `/clock` topic
+jumps backwards — this is expected and does not affect the policy or the
+score.
+
 ## What's in the stack
 | Component | Role |
 |---|---|

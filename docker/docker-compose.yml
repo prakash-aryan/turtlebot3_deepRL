@@ -1,0 +1,28 @@
+services:
+  drl:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: turtlebot3-drl:jazzy
+    container_name: turtlebot3-drl
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility]
+    ports:
+      - "6080:6040"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    volumes:
+      - ..:/root/turtlebot3_deepRL:rw
+    ipc: host
+    stdin_open: true
+    tty: true
